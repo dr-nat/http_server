@@ -1,6 +1,9 @@
-use std::collections::HashMap;
+//use std::collections::HashMap;
 use std::error::Error;
 
+
+#[derive(PartialEq)]
+#[derive(Debug)]
 pub enum Methods {
     GET,
     PATCH,
@@ -21,8 +24,8 @@ pub struct Request {
 
 impl Request {
     
-    fn get_method(request: &str) -> Result<Methods, Box<dyn Error>> {
-           
+    pub fn get_method(request: &str) -> Result<Methods, Box<dyn Error>> {
+          
         if let Some((first_line, _)) = request.split_once("\r\n") {
 
             let mut first_word = first_line.split_whitespace();
@@ -30,13 +33,13 @@ impl Request {
             if let Some(word) = first_word.next() {
 
                 let method = match word {  
-                    "Get" => Methods::GET,
+                    "GET" => Methods::GET,
 
-                    "Patch" => Methods::PATCH ,
+                    "PATCH" => Methods::PATCH ,
                     
-                    "Post" => Methods::POST,
+                    "POST" => Methods::POST,
 
-                    "Delete" => Methods::DELETE, 
+                    "DELETE" => Methods::DELETE, 
 
                     _ => Methods::UNKNOWN,
                 };
@@ -48,7 +51,7 @@ impl Request {
         
     }
 
-    fn get_path(request: &str) -> Result<String, Box<dyn Error>> {
+    pub fn get_path(request: &str) -> Result<String, Box<dyn Error>> {
         
         if let Some(( first_line, _)) = request.split_once("\r\n") {
             
@@ -65,7 +68,7 @@ impl Request {
         Err(format!("Empty field").into())
     }
 
-    fn get_host(request: &str) -> Result<String, Box<dyn Error>> {
+    pub fn get_host(request: &str) -> Result<String, Box<dyn Error>> {
        
        if let Some((_, other_lines)) = request.split_once("\r\n") {
              
@@ -82,4 +85,21 @@ impl Request {
        Err("HOST NOT FOUND".into())
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const DUMMY_REQUEST: &str = "GET /index.html HTTP/1.1\r\n
+Host: localhost:8080\r\n
+User-Agent: Mozilla/5.0\r\n
+Accept: */*\r\n\r\n"; 
+
+    #[test]
+    fn test_method(){
+        assert_eq!(Request::get_method(&DUMMY_REQUEST).unwrap(), Methods::GET) 
+    }
+}       
+
 
