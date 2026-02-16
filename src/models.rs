@@ -14,8 +14,8 @@ pub struct Request {
     method: Methods,
     host: String, 
     path: String,
-    header: HashMap<String, String>,
-    body: Option<Vec<u8>>,
+    //header: HashMap<String, String>,
+    //body: Option<Vec<u8>>,
 }
 
 
@@ -50,7 +50,7 @@ impl Request {
 
     fn get_path(request: &str) -> Result<String, Box<dyn Error>> {
         
-        if let Some((mut first_line, _)) = request.split_once("\r\n") {
+        if let Some(( first_line, _)) = request.split_once("\r\n") {
             
             let mut words = first_line.split_whitespace();
 
@@ -63,6 +63,23 @@ impl Request {
         }
 
         Err(format!("Empty field").into())
+    }
+
+    fn get_host(request: &str) -> Result<String, Box<dyn Error>> {
+       
+       if let Some((_, other_lines)) = request.split_once("\r\n") {
+             
+           for lines in other_lines.lines() {
+                if lines.starts_with("Host: ") {
+                    if let Some(prefix) = lines.strip_prefix("Host: ") {
+                        return Ok(prefix.to_string());
+                    }
+                } 
+           }
+
+        }
+       
+       Err("HOST NOT FOUND".into())
     }
 }
 
