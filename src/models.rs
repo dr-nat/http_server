@@ -23,6 +23,19 @@ pub struct Request {
 
 
 impl Request {
+    pub fn new(request: &str) -> Result<Self, Box<dyn Error>>{
+       let method = Self::get_method(request);
+
+       let path = Self::get_path(request);
+
+       let host = Self::get_host(request);
+
+        Ok(Request{
+            method: method?,
+            host: host?,
+            path: path?,
+        })
+    }
     
     pub fn get_method(request: &str) -> Result<Methods, Box<dyn Error>> {
           
