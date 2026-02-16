@@ -106,6 +106,11 @@ Accept: */*\r\n\r\n";
         assert_eq!(Request::get_path(&DUMMY_REQUEST).unwrap(), "/index.html")
     }
 
+
+    #[test]
+    fn get_host() {
+        assert_eq!(Request::get_host(&DUMMY_REQUEST).unwrap(), "localhost:8080")
+    }
 }       
 
 
