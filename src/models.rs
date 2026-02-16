@@ -100,6 +100,12 @@ Accept: */*\r\n\r\n";
     fn test_method(){
         assert_eq!(Request::get_method(&DUMMY_REQUEST).unwrap(), Methods::GET) 
     }
+
+    #[test]
+    fn test_path() {
+        assert_eq!(Request::get_path(&DUMMY_REQUEST).unwrap(), "/index.html")
+    }
+
 }       
 
 
