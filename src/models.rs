@@ -1,4 +1,3 @@
-//use std::collections::HashMap;
 use std::error::Error;
 
 
@@ -17,85 +16,63 @@ pub struct Request {
     method: Methods,
     host: String, 
     path: String,
-    //header: HashMap<String, String>,
-    //body: Option<Vec<u8>>,
 }
 
 
 impl Request {
     pub fn new(request: &str) -> Result<Self, Box<dyn Error>>{
-       let method = Self::get_method(request);
 
-       let path = Self::get_path(request);
+        let mut lines = request.lines(); 
 
-       let host = Self::get_host(request);
+        let first_line = &lines.next().ok_or("first line not found")?;
+
+        let mut words = first_line.split_whitespace();
+
+        let first_word = words 
+            .next()
+            .ok_or("First word not found")?;
+
+
+        let methods = match first_word {  
+            "GET" => Methods::GET,
+
+            "PATCH" => Methods::PATCH ,
+            
+            "POST" => Methods::POST,
+
+            "DELETE" => Methods::DELETE, 
+
+            _ => Methods::UNKNOWN,
+        };
+        
+        let request_path = words.next().ok_or("Path not found")?; 
+
+
+        let host = request.lines()
+            .find(|line| line.starts_with("Host: "))
+            .and_then(|line| line.strip_prefix("Host: "))
+            .ok_or("Host header not found")?
+            .to_string();
+    
 
         Ok(Request{
-            method: method?,
-            host: host?,
-            path: path?,
+            method: methods,
+            host: host,
+            path: request_path.to_string(),
         })
     }
-    
-    pub fn get_method(request: &str) -> Result<Methods, Box<dyn Error>> {
-          
-        if let Some((first_line, _)) = request.split_once("\r\n") {
 
-            let mut first_word = first_line.split_whitespace();
-            
-            if let Some(word) = first_word.next() {
 
-                let method = match word {  
-                    "GET" => Methods::GET,
-
-                    "PATCH" => Methods::PATCH ,
-                    
-                    "POST" => Methods::POST,
-
-                    "DELETE" => Methods::DELETE, 
-
-                    _ => Methods::UNKNOWN,
-                };
-
-                return Ok(method);
-            }
-        } 
-        Err("Failed to parse method".into())
-        
+    pub fn get_method(&self, request: &str) -> &Methods  {
+        &self.method
     }
 
-    pub fn get_path(request: &str) -> Result<String, Box<dyn Error>> {
-        
-        if let Some(( first_line, _)) = request.split_once("\r\n") {
-            
-            let mut words = first_line.split_whitespace();
-
-            words.next().ok_or("Empty filed")?;
-
-            let path = words.next().ok_or("Missing Field")?;
-        
-            return Ok(path.to_string());
-
-        }
-
-        Err(format!("Empty field").into())
+    pub fn get_path(&self, request: &str) -> String {
+        self.path.clone()
     }
 
-    pub fn get_host(request: &str) -> Result<String, Box<dyn Error>> {
-       
-       if let Some((_, other_lines)) = request.split_once("\r\n") {
-             
-           for lines in other_lines.lines() {
-                if lines.starts_with("Host: ") {
-                    if let Some(prefix) = lines.strip_prefix("Host: ") {
-                        return Ok(prefix.to_string());
-                    }
-                } 
-           }
-
-        }
-       
-       Err("HOST NOT FOUND".into())
+    pub fn get_host(&self, request: &str) -> String {
+        self.host.clone()
     }
 }
 
@@ -125,5 +102,3 @@ Accept: */*\r\n\r\n";
         assert_eq!(Request::get_host(&DUMMY_REQUEST).unwrap(), "localhost:8080")
     }
 }       
-
-
