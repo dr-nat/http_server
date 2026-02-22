@@ -22,6 +22,7 @@ pub struct Request {
 impl Request {
     pub fn new(request: &str) -> Result<Self, Box<dyn Error>>{
 
+        //METHODS
         let mut lines = request.lines(); 
 
         let first_line = &lines.next().ok_or("first line not found")?;
@@ -45,9 +46,10 @@ impl Request {
             _ => Methods::UNKNOWN,
         };
         
+        //PATH
         let request_path = words.next().ok_or("Path not found")?; 
-
-
+        
+        //HOST
         let host = request.lines()
             .find(|line| line.starts_with("Host: "))
             .and_then(|line| line.strip_prefix("Host: "))
@@ -81,24 +83,48 @@ impl Request {
 mod tests {
     use super::*;
 
+    use crate::models;
+
     const DUMMY_REQUEST: &str = "GET /index.html HTTP/1.1\r\n
 Host: localhost:8080\r\n
 User-Agent: Mozilla/5.0\r\n
 Accept: */*\r\n\r\n"; 
 
+
     #[test]
     fn test_method(){
-        assert_eq!(Request::get_method(&DUMMY_REQUEST).unwrap(), Methods::GET) 
+        let request: models::Request = Request{
+            method: Methods::GET,
+            host: "example.com".to_string(),
+            path: "/index.html".to_string(),
+        };
+
+
+        assert_eq!(request.get_method(&DUMMY_REQUEST), &Methods::GET) 
     }
 
     #[test]
     fn test_path() {
-        assert_eq!(Request::get_path(&DUMMY_REQUEST).unwrap(), "/index.html")
+        let request: models::Request = Request{
+                method: Methods::GET,
+            host: "example.com".to_string(),
+            path: "/index.html".to_string(),
+        };
+
+
+        assert_eq!(request.get_path(&DUMMY_REQUEST), "/index.html")
     }
 
 
     #[test]
     fn get_host() {
-        assert_eq!(Request::get_host(&DUMMY_REQUEST).unwrap(), "localhost:8080")
+        let request: models::Request = Request{
+            method: Methods::GET,
+            host: "example.com".to_string(),
+            path: "/index.html".to_string(),
+        };
+
+
+        assert_eq!(request.get_host(&DUMMY_REQUEST), "localhost:8080")
     }
 }       
