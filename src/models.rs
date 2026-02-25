@@ -65,11 +65,11 @@ impl Request {
     }
 
 
-    pub fn get_method(&self, request: &str) -> &Methods  {
+    pub fn get_method(&self) -> &Methods  {
         &self.method
     }
 
-    pub fn get_path(&self, request: &str) -> String {
+    pub fn get_path(&self) -> String {
         self.path.clone()
     }
 
@@ -120,7 +120,7 @@ Accept: */*\r\n\r\n";
     fn get_host() {
         let request: models::Request = Request{
             method: Methods::GET,
-            host: "example.com".to_string(),
+            host: "localhost.8080".to_string(),
             path: "/index.html".to_string(),
         };
 
