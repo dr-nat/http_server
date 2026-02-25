@@ -11,6 +11,20 @@ pub enum Methods {
     UNKNOWN
 }
 
+// so we are creating an implementation block for the to string trait 
+// we want the enum methods to implement the tostring method found under 
+// to string trait, so we create our own method in an impl block.
+impl ToString for Methods {
+    fn to_string(&self) -> String {
+       match self {
+            Methods::GET => "GET".to_string(),
+            Methods::PATCH => "PATCH".to_string(),
+            Methods::POST => "POST".to_string(),
+            Methods::DELETE => "DELETE".to_string(),
+            Methods::UNKNOWN => "UNKNOWN".to_string(),
+       } 
+    } 
+}
 
 pub struct Request {
     method: Methods,
@@ -65,8 +79,8 @@ impl Request {
     }
 
 
-    pub fn get_method(&self) -> &Methods  {
-        &self.method
+    pub fn get_method(&self) -> Methods  {
+        self.method
     }
 
     pub fn get_path(&self) -> String {
@@ -85,7 +99,7 @@ mod tests {
 
     use crate::models;
 
-    const DUMMY_REQUEST: &str = "GET /index.html HTTP/1.1\r\n
+    const _DUMMY_REQUEST: &str = "GET /index.html HTTP/1.1\r\n
 Host: localhost:8080\r\n
 User-Agent: Mozilla/5.0\r\n
 Accept: */*\r\n\r\n"; 
@@ -100,7 +114,7 @@ Accept: */*\r\n\r\n";
         };
 
 
-        assert_eq!(request.get_method(&DUMMY_REQUEST), &Methods::GET) 
+        assert_eq!(request.get_method(), &Methods::GET) 
     }
 
     #[test]
@@ -112,7 +126,7 @@ Accept: */*\r\n\r\n";
         };
 
 
-        assert_eq!(request.get_path(&DUMMY_REQUEST), "/index.html")
+        assert_eq!(request.get_path(), "/index.html")
     }
 
 
@@ -125,6 +139,6 @@ Accept: */*\r\n\r\n";
         };
 
 
-        assert_eq!(request.get_host(&DUMMY_REQUEST), "localhost:8080")
+        assert_eq!(request.get_host(), "localhost:8080")
     }
 }       
