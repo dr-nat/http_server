@@ -73,7 +73,7 @@ impl Request {
         self.path.clone()
     }
 
-    pub fn get_host(&self, request: &str) -> String {
+    pub fn get_host(&self) -> String {
         self.host.clone()
     }
 }
