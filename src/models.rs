@@ -26,6 +26,14 @@ impl ToString for Methods {
     } 
 }
 
+// created an implementation of clone for methods so i can call clone on the method type
+// interesting.
+impl Clone for Methods {
+    fn clone(&self) -> Self{
+        self.clone()
+    }
+}
+
 pub struct Request {
     method: Methods,
     host: String, 
@@ -80,7 +88,7 @@ impl Request {
 
 
     pub fn get_method(&self) -> Methods  {
-        self.method
+        self.method.clone()
     }
 
     pub fn get_path(&self) -> String {
