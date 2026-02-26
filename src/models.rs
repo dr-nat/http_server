@@ -1,6 +1,7 @@
 use std::error::Error;
 
 
+#[derive(Clone)] // an automatic way of creating implementation of a trait for a specific type, so here we create different traits implementation for the enum methods.
 #[derive(PartialEq)]
 #[derive(Debug)]
 pub enum Methods {
@@ -26,13 +27,6 @@ impl ToString for Methods {
     } 
 }
 
-// created an implementation of clone for methods so i can call clone on the method type
-// interesting.
-impl Clone for Methods {
-    fn clone(&self) -> Self{
-        self.clone()
-    }
-}
 
 pub struct Request {
     method: Methods,
