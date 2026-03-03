@@ -30,7 +30,6 @@ impl ToString for Methods {
 
 pub struct Request {
     method: Methods,
-    host: String, 
     path: String,
 }
 
@@ -65,17 +64,8 @@ impl Request {
         //PATH
         let request_path = words.next().ok_or("Path not found")?; 
         
-        //HOST
-        let host = request.lines()
-            .find(|line| line.starts_with("Host: "))
-            .and_then(|line| line.strip_prefix("Host: "))
-            .ok_or("Host header not found")?
-            .to_string();
-    
-
         Ok(Request{
             method: methods,
-            host: host,
             path: request_path.to_string(),
         })
     }
@@ -87,10 +77,6 @@ impl Request {
 
     pub fn get_path(&self) -> String {
         self.path.clone()
-    }
-
-    pub fn get_host(&self) -> String {
-        self.host.clone()
     }
 }
 
@@ -111,36 +97,21 @@ Accept: */*\r\n\r\n";
     fn test_method(){
         let request: models::Request = Request{
             method: Methods::GET,
-            host: "example.com".to_string(),
             path: "/index.html".to_string(),
         };
 
 
-        assert_eq!(request.get_method(), &Methods::GET) 
+        assert_eq!(request.get_method(), Methods::GET) 
     }
 
     #[test]
     fn test_path() {
         let request: models::Request = Request{
                 method: Methods::GET,
-            host: "example.com".to_string(),
             path: "/index.html".to_string(),
         };
 
 
         assert_eq!(request.get_path(), "/index.html")
-    }
-
-
-    #[test]
-    fn get_host() {
-        let request: models::Request = Request{
-            method: Methods::GET,
-            host: "localhost.8080".to_string(),
-            path: "/index.html".to_string(),
-        };
-
-
-        assert_eq!(request.get_host(), "localhost:8080")
     }
 }       
