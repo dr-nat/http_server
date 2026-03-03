@@ -51,6 +51,12 @@ pub fn handle_request(mut stream: TcpStream) -> std::io::Result<()> {
                 stream.write_all(response_buffer.as_bytes())?;
             }
         }
+    } else {
+        let not_found_response = "HTTP/1.1 404 NOT FOUND\r\nContent-Length: 0\r\n\r\n";
+        
+        stream.write_all(not_found_response.as_bytes())?;
+
+        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Request not found"));
     }
 
     Ok(())
