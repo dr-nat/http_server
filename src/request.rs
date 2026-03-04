@@ -1,5 +1,5 @@
 use crate::models::Request;
-use std::net::TcpStream;
+use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use std::fs::*;
 use std::io::*;
 use crate::cl_args;
@@ -9,10 +9,10 @@ use crate::cl_args;
 //call our methods on it to get the method the path and the host, 
 //and the perform specific search based on our specified path gotten from the received request.
 
-pub fn handle_request(mut stream: TcpStream) -> std::io::Result<()> {
+pub async fn handle_request(mut stream: tokio::net::TcpStream) -> std::io::Result<()> {
     let mut buffer = [0u8; 4096];
 
-    let incoming_streams = stream.read(&mut buffer[..])?;
+    let incoming_streams = stream.read(&mut buffer[..]).await?;
 
     let bytes = &buffer[..incoming_streams];
 
@@ -46,15 +46,15 @@ pub fn handle_request(mut stream: TcpStream) -> std::io::Result<()> {
 
                 let file_contents = std::fs::read_to_string(file_path)?; // so we get the file path and then read it to string and then format it using our function and then write it to the buffer we created. 
 
-                let formated_response = format_string_response(file_contents);
+                let _formated_response = format_string_response(file_contents);
                 
-                stream.write_all(response_buffer.as_bytes())?;
+                let _ = stream.write(response_buffer.as_bytes());
             }
         }
     } else {
         let not_found_response = "HTTP/1.1 404 NOT FOUND\r\nContent-Length: 0\r\n\r\n";
         
-        stream.write_all(not_found_response.as_bytes())?;
+        let _ = stream.write(not_found_response.as_bytes());
 
         return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Request not found"));
     }
