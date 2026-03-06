@@ -1,7 +1,6 @@
 use crate::models::Request;
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use std::fs::*;
-use std::io::*;
 use crate::cl_args;
  
 // so here we create a function that reads streams to a buffer as bytes, 
@@ -9,7 +8,7 @@ use crate::cl_args;
 //call our methods on it to get the method the path and the host, 
 //and the perform specific search based on our specified path gotten from the received request.
 
-pub async fn handle_request(mut stream: tokio::net::TcpStream) -> std::io::Result<()> {
+pub async fn handle_request(mut stream: tokio::net::TcpStream) -> std::io::Result<()> { // so the function signature takes in a stream of type tcpstream of the tokio crate.
     let mut buffer = [0u8; 4096];
 
     let incoming_streams = stream.read(&mut buffer[..]).await?;
@@ -26,15 +25,18 @@ pub async fn handle_request(mut stream: tokio::net::TcpStream) -> std::io::Resul
 
     let path = extracted_request.get_path();
 
+    println!("Request Method: {:?}, Path: {:?}", method, path);
     let folder = cl_args::get_args();
 
     let extracted_folder = folder.expect("Failed to extract the Folder"); // so we ge the folder and then read through the directory, then compare if the path gotten is found and then return the file in the html format.
 
     if method.to_string() == "GET".to_string() {
        let workspace = read_dir(extracted_folder)?;
+
+       // so readdir returns an iterator which is dir entry, so we use a for loop to get the direntry path of the result, and then call the direntry methods on it.
        
        for files in workspace {
-            let file_entry = files?;
+            let file_entry = files?; // search why this line exist in your code
             let file_path = &file_entry.path();
 
             let file = file_entry.metadata();
@@ -42,11 +44,10 @@ pub async fn handle_request(mut stream: tokio::net::TcpStream) -> std::io::Resul
             if file?.is_file().to_string() == path {
                 let response_buffer = String::new(); 
 
-                //let file_path = file?.path();
-
                 let file_contents = std::fs::read_to_string(file_path)?; // so we get the file path and then read it to string and then format it using our function and then write it to the buffer we created. 
 
-                let _formated_response = format_string_response(file_contents);
+                let formated_response = format_string_response(file_contents);
+                println!("Sending Request:\n {:?}", formated_response);
                 
                 let _ = stream.write(response_buffer.as_bytes());
             }
