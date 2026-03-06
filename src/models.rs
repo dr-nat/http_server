@@ -42,7 +42,7 @@ impl Request {
 
         let first_line = &lines.next().ok_or("first line not found")?;
 
-        let mut words = first_line.split_whitespace();
+        let mut words = first_line.split_whitespace(); //so spliting whitespaces helps us to access every word
 
         let first_word = words 
             .next()
