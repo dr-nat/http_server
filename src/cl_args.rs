@@ -13,9 +13,9 @@ pub fn get_args() -> Result<PathBuf, Box<dyn Error>> {
     
     // so here we want to handle errors where if a user enters 
     // an argument that is not a directory, then we dont use it, 
-    // so we convert the folder to  type of metadata, so we can 
-    // use the dir method to check if path is a folder and then handle errors
-    // so we store the folder in a vavriable for future  use.
+    // so we convert the argument to type of path buf since we are returning an owned path and then call the metadata method on it to check
+    // if the folder is dir, and then return it
+
 
    let folder_path = PathBuf::from(first_arg);  // so here we convert the string gotten from the first argument to a path buf and then get  
                                                // get the metadata to check if it is a directory and then return the path for future use.
