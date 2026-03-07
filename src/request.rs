@@ -1,6 +1,6 @@
 use crate::models::Request;
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
-use std::fs::*;
+//use std::fs::*;
 use crate::cl_args;
  
 // so here we create a function that reads streams to a buffer as bytes, 
@@ -28,47 +28,46 @@ pub async fn handle_request(mut stream: tokio::net::TcpStream) -> std::io::Resul
     println!("Request Method: {:?}, Path: {:?}", method, path);
     let folder = cl_args::get_args();
 
-    let extracted_folder = folder.expect("Failed to extract the Folder"); // so we ge the folder and then read through the directory, then compare if the path gotten is found and then return the file in the html format.
+    let extracted_folder = folder.expect("Failed to extract the Folder"); 
 
     if method.to_string() == "GET".to_string() {
-       let workspace = read_dir(extracted_folder)?;
 
-       // so readdir returns an iterator which is dir entry, so we use a for loop to get the direntry path of the result, and then call the direntry methods on it.
-       
-       for files in workspace {
-            let file_entry = files?; // search why this line exist in your code
-            let file_path = &file_entry.path();
+        // 1. Join the folder and the path (trimming the leading '/' from the URL)
+        let clean_path = path.trim_start_matches('/');
+        let full_path = std::path::Path::new(&extracted_folder).join(clean_path);
 
-            let file = file_entry.metadata();
-
-            if file?.is_file().to_string() == path {
-                let response_buffer = String::new(); 
-
-                let file_contents = std::fs::read_to_string(file_path)?; // so we get the file path and then read it to string and then format it using our function and then write it to the buffer we created. 
-
-                let formated_response = format_string_response(file_contents);
-                println!("Sending Request:\n {:?}", formated_response);
+        // 2. Use match to decide exactly one outcome
+        match full_path.exists() && full_path.is_file() {
+            true => {
+                let file_contents = tokio::fs::read(&full_path).await?;
+                let formated_response = format_string_response(&file_contents);
                 
-                let _ = stream.write(response_buffer.as_bytes());
+                stream.write_all(&formated_response).await?;
+                return Ok(()); 
+            }
+            false => {
+                let not_found = "HTTP/1.1 404 NOT FOUND\r\nContent-Length: 0\r\n\r\n";
+                stream.write_all(not_found.as_bytes()).await?;
+                return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "File not found"));
             }
         }
-    } else {
-        let not_found_response = "HTTP/1.1 404 NOT FOUND\r\nContent-Length: 0\r\n\r\n";
-        
-        let _ = stream.write(not_found_response.as_bytes());
-
-        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Request not found"));
-    }
+    } 
 
     Ok(())
 }
 
-fn format_string_response(file_input: String) -> String {
+fn format_string_response(file_input: &[u8]) -> Vec<u8> {
     
     let status_line = "HTTP1.1/ 200 OK";
 
-    format!("{}\r\nContent-Length {}\r\nContent-Type: text/html\r\n\r\n{}", 
+    let header = format!("{}\r\nContent-Length {}\r\nContent-Type: text/html\r\n\r\n", 
         status_line, 
         file_input.len(), 
-        file_input)
+    );
+
+    let mut response = header.into_bytes();
+
+    response.extend_from_slice(file_input);
+
+    response
 }
